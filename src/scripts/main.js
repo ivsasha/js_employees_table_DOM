@@ -192,46 +192,55 @@ const addEmployee = (e) => {
 form.addEventListener('submit', addEmployee);
 
 let doubleClick = false;
+let activeRow = null;
 
-tr.forEach((row, rowIndex) => {
+const handleKeydown = (e) => {
+  if (!activeRow) {
+    return;
+  }
+
+  const cells = activeRow.querySelectorAll('td');
+
+  if (e.key === 'Enter') {
+    cells.forEach((cell, cellIndex) => {
+      const input = cell.querySelector('input');
+      const inputValue = input ? input.value.trim() : '';
+
+      if (input && inputValue !== '') {
+        cell.textContent = inputValue;
+      } else {
+        cell.textContent = cell.dataset.originalText || '';
+      }
+    });
+
+    doubleClick = false;
+    activeRow.removeEventListener('keydown', handleKeydown);
+    activeRow = null;
+  }
+};
+
+tr.forEach((row) => {
   row.addEventListener('dblclick', () => {
-    const cells = row.querySelectorAll('td');
-
-    const saveCell = {};
-
-    if (doubleClick === false) {
-      cells.forEach((cell, cellIndex) => {
-        const input = document.createElement('input');
-
-        input.classList.add('cell-input');
-        saveCell[cellIndex] = cell.textContent;
-
-        input.type = 'text';
-        input.value = cell.textContent;
-        cell.innerHTML = '';
-        cell.appendChild(input);
-      });
-      doubleClick = true;
+    if (doubleClick) {
+      return;
     }
 
-    const func = (e) => {
-      if (e.key === 'Enter') {
-        cells.forEach((cell, cellIndex) => {
-          const input = cell.querySelector('input');
-          const inputValue = input.value.trim();
+    const cells = row.querySelectorAll('td');
 
-          if (input && inputValue !== '') {
-            cell.textContent = input.value;
-          } else {
-            cell.textContent = saveCell[cellIndex];
-          }
-        });
-        doubleClick = false;
-      }
-    };
+    cells.forEach((cell) => {
+      const input = document.createElement('input');
 
-    row.addEventListener('keydown', func);
+      input.classList.add('cell-input');
+      cell.dataset.originalText = cell.textContent;
+      input.type = 'text';
+      input.value = cell.textContent;
+      cell.innerHTML = '';
+      cell.appendChild(input);
+    });
 
-    row.removeEventListener('keydown', func);
+    doubleClick = true;
+    activeRow = row;
+
+    row.addEventListener('keydown', handleKeydown);
   });
 });
