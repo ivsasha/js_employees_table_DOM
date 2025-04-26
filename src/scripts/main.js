@@ -7,6 +7,13 @@ headers.forEach((header) => {
     const table = document.querySelector('table');
     const rows = Array.from(table.querySelectorAll('tbody tr'));
     const index = Array.from(header.parentNode.children).indexOf(header);
+
+    headers.forEach((h) => {
+      if (h !== header) {
+        h.classList.remove('ascending');
+      }
+    });
+
     const isAscending = header.classList.toggle('ascending');
     const sortedRows = rows.sort((a, b) => {
       const aText = a.querySelectorAll('td')[index].textContent;
@@ -34,7 +41,7 @@ headers.forEach((header) => {
 });
 
 const tr = document.querySelectorAll('tbody tr');
-let prevSelectedRow = document.querySelector('tbody tr.selected');
+let prevSelectedRow = document.querySelector('tbody tr.active');
 
 tr.forEach((row) => {
   row.addEventListener('click', () => {
@@ -165,7 +172,7 @@ const addEmployee = (e) => {
     notification.textContent = 'Name must be at least 4 characters long';
     notification.classList.add('error');
   } else if (age < 18 || age > 90) {
-    notification.textContent = 'Age must be at least 18';
+    notification.textContent = 'Age must be at least 18 and less than 90';
     notification.classList.add('error');
   } else {
     notification.textContent = 'Employee added successfully';
@@ -184,7 +191,7 @@ const addEmployee = (e) => {
 
 form.addEventListener('submit', addEmployee);
 
-let dobleClick = false;
+let doubleClick = false;
 
 tr.forEach((row, rowIndex) => {
   row.addEventListener('dblclick', () => {
@@ -192,7 +199,7 @@ tr.forEach((row, rowIndex) => {
 
     const saveCell = {};
 
-    if (dobleClick === false) {
+    if (doubleClick === false) {
       cells.forEach((cell, cellIndex) => {
         const input = document.createElement('input');
 
@@ -204,10 +211,10 @@ tr.forEach((row, rowIndex) => {
         cell.innerHTML = '';
         cell.appendChild(input);
       });
-      dobleClick = true;
+      doubleClick = true;
     }
 
-    row.addEventListener('keydown', (e) => {
+    const func = (e) => {
       if (e.key === 'Enter') {
         cells.forEach((cell, cellIndex) => {
           const input = cell.querySelector('input');
@@ -219,8 +226,12 @@ tr.forEach((row, rowIndex) => {
             cell.textContent = saveCell[cellIndex];
           }
         });
-        dobleClick = false;
+        doubleClick = false;
       }
-    });
+    };
+
+    row.addEventListener('keydown', func);
+
+    row.removeEventListener('keydown', func);
   });
 });
